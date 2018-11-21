@@ -41,19 +41,7 @@ namespace WebApi.Services
                 return null;
 
             // authentication successful so generate jwt token
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[] 
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            user.Token = tokenHandler.WriteToken(token);
+            user.Token = GenerateToken(new Claim[]{new Claim(ClaimTypes.Name, user.Id.ToString())});
 
             // remove password before returning
             user.Password = null;
@@ -68,6 +56,20 @@ namespace WebApi.Services
                 x.Password = null;
                 return x;
             });
+        }
+        private string GenerateToken(IEnumerable<Claim> claims)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.Secret));
+
+            var jwt = new JwtSecurityToken(issuer: "Blinkingcaret",
+                audience: "Everyone",
+                claims: claims, //the user's claims, for example new Claim[] { new Claim(ClaimTypes.Name, "The username"), //... 
+                notBefore: DateTime.UtcNow,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt); //the method is called WriteToken but returns a string
         }
     }
 }
