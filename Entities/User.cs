@@ -1,3 +1,5 @@
+using System;
+
 namespace WebApi.Entities
 {
     public class User
@@ -7,6 +9,7 @@ namespace WebApi.Entities
         public string LastName { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
-        public string Token { get; set; }
+        public string RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiredAtUtcTime { get; set; }
     }
 }

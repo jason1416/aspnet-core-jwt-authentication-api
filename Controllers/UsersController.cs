@@ -5,9 +5,9 @@ using WebApi.Entities;
 
 namespace WebApi.Controllers
 {
-  [Authorize]
+    [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    //  [Route("[controller]")]
     public class UsersController : ControllerBase
     {
         private IUserService _userService;
@@ -18,7 +18,7 @@ namespace WebApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("authenticate")]
+        [HttpPost("/auth")]
         public IActionResult Authenticate([FromBody]User userParam)
         {
             var user = _userService.Authenticate(userParam.Username, userParam.Password);
@@ -29,11 +29,24 @@ namespace WebApi.Controllers
             return Ok(user);
         }
 
-        [HttpGet]
+        [HttpGet("/users")]
         public IActionResult GetAll()
         {
-            var users =  _userService.GetAll();
+            var users = _userService.GetAll();
             return Ok(users);
         }
+        [AllowAnonymous]
+        [HttpPost("/auth/token/refresh")]
+        public IActionResult RefreshToken([FromBody]User userParam)
+        {
+            var user = _userService.RefreshToken(userParam.RefreshToken);
+
+            if (user == null)
+                return BadRequest(new { message = "refresh token failed" });
+
+            return Ok(user);
+        }
+
+
     }
 }
